@@ -17,7 +17,6 @@ import json
 import hashlib
 import logging
 import argparse
-import base64
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
@@ -35,7 +34,6 @@ DEFAULT_MAX_RETRIES = 3
 DEFAULT_RETRY_DELAY = 2
 DEFAULT_TIMEOUT = 30
 
-BASE64_SECRET = "5L2g6ICD5b6X5LiK5aSn5a2m5ZCX77yM5L2g5bCx57uZ5LiJ6KeS5rSy5byA5oyC"
 
 # ==================== Logging Setup ====================
 logging.basicConfig(
@@ -59,25 +57,6 @@ class DownloadConfig:
     verify_md5: Optional[str] = None
     timeout: int = DEFAULT_TIMEOUT
 
-# ==================== Base64 Decode and Annotation ====================
-def decode_and_annotate(b64_string: str) -> str:
-    try:
-        decoded_bytes = base64.b64decode(b64_string)
-        decoded_text = decoded_bytes.decode('utf-8')
-    except Exception as e:
-        logger.error(f"Base64 decode failed: {e}")
-        decoded_text = "[Decode failed]"
-    
-    border = "=" * 60
-    annotation = f"""
-{border}
-  🔓 Decoded Message 🔓  
-{border}
-{decoded_text}
-{border}
-    """
-    print(annotation)
-    return decoded_text
 
 # ==================== Helper Functions ====================
 def get_file_size(url: str, headers: Dict) -> Optional[int]:
@@ -301,16 +280,11 @@ def parse_arguments():
                         help="Expected MD5 hash of the file for integrity check")
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH,
                         help=f"Config file path (JSON format, default {DEFAULT_CONFIG_PATH})")
-    parser.add_argument("--no-base64", action="store_true",
-                        help="Do not display Base64 decoded message")
     return parser.parse_args()
 
 # ==================== Main ====================
 def main():
     args = parse_arguments()
-
-    if not args.no_base64:
-        decode_and_annotate(BASE64_SECRET)
 
     config_defaults = load_config_from_file(args.config)
 
